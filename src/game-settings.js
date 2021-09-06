@@ -37,7 +37,7 @@ export default [
         defaultBetTracks: {},
         repositories: {
             roundsRepository: getRoundRepository("kenopower2_phien"),
-            betsRepository: getBetRepository("kenopower2_cuoc"),
+            betsRepository: getBetRepository("kenopower2_one"),
             betLogsRepository: getBetLogsRepository("kenopower2_log"),
         },
         generateResult: generateResult,
