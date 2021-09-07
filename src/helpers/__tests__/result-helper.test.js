@@ -1,0 +1,200 @@
+import { getSettlementResult, generateResult } from "../result-helper";
+
+describe("settlementResult tests", () => {
+    const testCases = [
+        {
+            result: {
+                totalPlayer: 720,
+                totalBanker: 573,
+            },
+            settlementResult: {
+                player: true,
+                banker: false,
+                tie: false,
+                big: false,
+                small: true,
+                odd: true,
+                even: false,
+                red: true,
+                orange: false,
+                yellow: false,
+                green: false,
+                blue: false,
+                indigo: false,
+                violet: false,
+                playerBig: false,
+                playerSmall: true,
+                bankerBig: false,
+                bankerSmall: true,
+            },
+        },
+        {
+            result: {
+                totalPlayer: 718,
+                totalBanker: 718,
+            },
+            settlementResult: {
+                player: false,
+                banker: false,
+                tie: true,
+                big: false,
+                small: true,
+                odd: false,
+                even: true,
+                red: false,
+                orange: true,
+                yellow: false,
+                green: false,
+                blue: false,
+                indigo: false,
+                violet: false,
+                playerBig: false,
+                playerSmall: true,
+                bankerBig: false,
+                bankerSmall: true,
+            },
+        },
+        {
+            result: {
+                totalPlayer: 871,
+                totalBanker: 694,
+            },
+            settlementResult: {
+                player: true,
+                banker: false,
+                tie: false,
+                big: false,
+                small: true,
+                odd: true,
+                even: false,
+                red: false,
+                orange: false,
+                yellow: true,
+                green: false,
+                blue: false,
+                indigo: false,
+                violet: false,
+                playerBig: true,
+                playerSmall: false,
+                bankerBig: false,
+                bankerSmall: true,
+            },
+        },
+        {
+            result: {
+                totalPlayer: 644,
+                totalBanker: 935,
+            },
+            settlementResult: {
+                player: false,
+                banker: true,
+                tie: false,
+                big: false,
+                small: true,
+                odd: true,
+                even: false,
+                red: false,
+                orange: false,
+                yellow: false,
+                green: true,
+                blue: false,
+                indigo: false,
+                violet: false,
+                playerBig: false,
+                playerSmall: true,
+                bankerBig: true,
+                bankerSmall: false,
+            },
+        },
+        {
+            result: {
+                totalPlayer: 806,
+                totalBanker: 892,
+            },
+            settlementResult: {
+                player: false,
+                banker: true,
+                tie: false,
+                big: true,
+                small: false,
+                odd: false,
+                even: true,
+                red: false,
+                orange: false,
+                yellow: false,
+                green: false,
+                blue: true,
+                indigo: false,
+                violet: false,
+                playerBig: false,
+                playerSmall: true,
+                bankerBig: true,
+                bankerSmall: false,
+            },
+        },
+        {
+            result: {
+                totalPlayer: 818,
+                totalBanker: 1033,
+            },
+            settlementResult: {
+                player: false,
+                banker: true,
+                tie: false,
+                big: true,
+                small: false,
+                odd: true,
+                even: false,
+                red: false,
+                orange: false,
+                yellow: false,
+                green: false,
+                blue: false,
+                indigo: true,
+                violet: false,
+                playerBig: true,
+                playerSmall: false,
+                bankerBig: true,
+                bankerSmall: false,
+            },
+        },
+        {
+            result: {
+                totalPlayer: 961,
+                totalBanker: 963,
+            },
+            settlementResult: {
+                player: false,
+                banker: true,
+                tie: false,
+                big: true,
+                small: false,
+                odd: false,
+                even: true,
+                red: false,
+                orange: false,
+                yellow: false,
+                green: false,
+                blue: false,
+                indigo: false,
+                violet: true,
+                playerBig: true,
+                playerSmall: false,
+                bankerBig: true,
+                bankerSmall: false,
+            },
+        },
+    ];
+
+    it.each(testCases)("should return correct settlement", ({ result, settlementResult }) => {
+        expect(getSettlementResult(result)).toEqual(settlementResult);
+    });
+});
+
+describe("generateResult tests", () => {
+    it("should return exactly 20 number for banker and player", () => {
+        const result = generateResult();
+        expect(result.player.length).toEqual(20);
+        expect(result.banker.length).toEqual(20);
+    });
+});

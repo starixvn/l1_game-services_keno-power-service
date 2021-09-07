@@ -7,17 +7,17 @@ export class SettleGameRoundConsumer extends Core.BaseEventConsumers.SettleGameR
                 const betAmount = bet[choice] ?? 0;
                 const originalOdds = odds[choice] || 1;
                 const effectiveOdds = bet.freeBet ? originalOdds - 1 : originalOdds;
-                let winAmount = win ? betAmount * effectiveOdds : 0;
+                const winAmount = win ? betAmount * effectiveOdds : 0;
 
-                if (isPlayerOrBanker(choice) && settlementResult.tie) {
+                if (["player", "banker"].includes(choice) && settlementResult.tie) {
                     result.refund += betAmount;
                 }
 
                 result.totalBetAmount += betAmount;
                 result.totalWin += winAmount;
-                result.winningByChoices[choice] = winAmount;
 
                 if (winAmount > 0) {
+                    result.winningByChoices[choice] = winAmount;
                     result.netWin += winAmount - betAmount;
                 } else {
                     result.totalLost += betAmount;
@@ -81,9 +81,5 @@ export class SettleGameRoundConsumer extends Core.BaseEventConsumers.SettleGameR
             resultKey,
             roundId,
         });
-    }
-
-    isPlayerOrBanker(choice) {
-        return ["player", "banker"].includes(choice);
     }
 }
