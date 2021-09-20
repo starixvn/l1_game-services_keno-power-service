@@ -9,7 +9,7 @@ export class SettleGameRoundConsumer extends Core.BaseEventConsumers.SettleGameR
                 const effectiveOdds = bet.freeBet ? originalOdds - 1 : originalOdds;
                 const winAmount = win ? betAmount * effectiveOdds : 0;
 
-                if (["player", "banker"].includes(choice) && settlementResult.tie) {
+                if (["blue", "red"].includes(choice) && settlementResult.tie) {
                     result.refund += betAmount;
                 }
 

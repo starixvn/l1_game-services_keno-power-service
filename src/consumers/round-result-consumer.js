@@ -24,11 +24,11 @@ export class RoundResultConsumer {
 
         const result = this.gameData.roundId === resultFromAdmin.roundId ? resultFromAdmin.result : this.definition.generateResult();
 
-        const totalPlayer = sumArrayNumber(result.player);
-        const totalBanker = sumArrayNumber(result.banker);
-        const settlementResult = this.definition.settle({ totalPlayer, totalBanker }, true);
+        const totalBlue = sumArrayNumber(result.blue);
+        const totalRed = sumArrayNumber(result.red);
+        const settlementResult = this.definition.settle({ totalBlue, totalRed }, true);
 
-        const resultKey = `[${totalPlayer};${totalBanker}]${randomString()}`;
+        const resultKey = `[${totalBlue};${totalRed}]${randomString()}`;
         const md5 = createHashMD5(resultKey);
 
         await this.roundsRepository.create({
@@ -40,7 +40,7 @@ export class RoundResultConsumer {
             time: new Date(),
         });
 
-        Object.assign(this.gameData, { result, settlementResult, totalPlayer, totalBanker, resultKey });
+        Object.assign(this.gameData, { result, settlementResult, totalBlue, totalRed, resultKey });
         this.roundResultPublisher.publishMD5(md5);
     }
 }

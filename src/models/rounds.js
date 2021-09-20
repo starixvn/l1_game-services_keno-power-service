@@ -2,31 +2,24 @@ import mongoose from "mongoose";
 
 const settlementResultSchema = new mongoose.Schema(
     {
-        player: { type: Boolean, default: false },
-        banker: { type: Boolean, default: false },
+        blue: { type: Boolean, default: false },
+        red: { type: Boolean, default: false },
         big: { type: Boolean, default: false },
         small: { type: Boolean, default: false },
         odd: { type: Boolean, default: false },
         even: { type: Boolean, default: false },
-        red: { type: Boolean, default: false },
-        orange: { type: Boolean, default: false },
-        yellow: { type: Boolean, default: false },
-        green: { type: Boolean, default: false },
-        blue: { type: Boolean, default: false },
-        indigo: { type: Boolean, default: false },
-        violet: { type: Boolean, default: false },
-        playerBig: { type: Boolean, default: false },
-        playerSmall: { type: Boolean, default: false },
-        bankerBig: { type: Boolean, default: false },
-        bankerSmall: { type: Boolean, default: false },
+        blueBig: { type: Boolean, default: false },
+        blueSmall: { type: Boolean, default: false },
+        redBig: { type: Boolean, default: false },
+        redSmall: { type: Boolean, default: false },
     },
     { _id: false }
 );
 
 const resultSchema = new mongoose.Schema(
     {
-        player: { type: [Number], required: true },
-        banker: { type: [Number], required: true },
+        blue: { type: [Number], required: true },
+        red: { type: [Number], required: true },
     },
     { _id: false }
 );

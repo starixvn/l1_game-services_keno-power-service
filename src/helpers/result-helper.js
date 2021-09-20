@@ -31,30 +31,23 @@ const getRandom20Numbers = () => {
 };
 
 const settlementResultRuleEntries = Object.entries({
-    player: ({ totalPlayer, totalBanker }) => totalPlayer > totalBanker,
-    banker: ({ totalPlayer, totalBanker }) => totalBanker > totalPlayer,
-    tie: ({ totalPlayer, totalBanker }) => totalPlayer === totalBanker,
-    big: ({ totalPlayer, totalBanker }) => totalPlayer + totalBanker >= 1621,
-    small: ({ totalPlayer, totalBanker }) => totalPlayer + totalBanker < 1621,
-    odd: ({ totalPlayer, totalBanker }) => (totalPlayer + totalBanker) % 2 === 1,
-    even: ({ totalPlayer, totalBanker }) => (totalPlayer + totalBanker) % 2 === 0,
-    red: ({ totalPlayer, totalBanker }) => totalPlayer + totalBanker <= 1358,
-    orange: ({ totalPlayer, totalBanker }) => totalPlayer + totalBanker >= 1359 && totalPlayer + totalBanker <= 1469,
-    yellow: ({ totalPlayer, totalBanker }) => totalPlayer + totalBanker >= 1470 && totalPlayer + totalBanker <= 1570,
-    green: ({ totalPlayer, totalBanker }) => totalPlayer + totalBanker >= 1571 && totalPlayer + totalBanker <= 1669,
-    blue: ({ totalPlayer, totalBanker }) => totalPlayer + totalBanker >= 1670 && totalPlayer + totalBanker <= 1770,
-    indigo: ({ totalPlayer, totalBanker }) => totalPlayer + totalBanker >= 1771 && totalPlayer + totalBanker <= 1881,
-    violet: ({ totalPlayer, totalBanker }) => totalPlayer + totalBanker >= 1882 && totalPlayer + totalBanker <= 2820,
-    playerBig: ({ totalPlayer }) => totalPlayer >= 811,
-    playerSmall: ({ totalPlayer }) => totalPlayer < 811,
-    bankerBig: ({ totalBanker }) => totalBanker >= 811,
-    bankerSmall: ({ totalBanker }) => totalBanker < 811,
+    blue: ({ totalBlue, totalRed }) => totalBlue > totalRed,
+    red: ({ totalBlue, totalRed }) => totalRed > totalBlue,
+    tie: ({ totalBlue, totalRed }) => totalBlue === totalRed,
+    big: ({ totalBlue, totalRed }) => totalBlue + totalRed >= 1621,
+    small: ({ totalBlue, totalRed }) => totalBlue + totalRed < 1621,
+    odd: ({ totalBlue, totalRed }) => (totalBlue + totalRed) % 2 === 1,
+    even: ({ totalBlue, totalRed }) => (totalBlue + totalRed) % 2 === 0,
+    blueBig: ({ totalBlue }) => totalBlue >= 811,
+    blueSmall: ({ totalBlue }) => totalBlue < 811,
+    redBig: ({ totalRed }) => totalRed >= 811,
+    redSmall: ({ totalRed }) => totalRed < 811,
 });
 
 export const generateResult = () => {
     return {
-        player: getRandom20Numbers(),
-        banker: getRandom20Numbers(),
+        blue: getRandom20Numbers(),
+        red: getRandom20Numbers(),
     };
 };
 
