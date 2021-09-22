@@ -9,12 +9,6 @@ export class SettleGameRoundConsumer extends Core.BaseEventConsumers.SettleGameR
                 const effectiveOdds = bet.freeBet ? originalOdds - 1 : originalOdds;
                 const winAmount = win ? betAmount * effectiveOdds : 0;
 
-                console.log(odds);
-                console.log(choice);
-                console.log(originalOdds);
-                console.log(winAmount);
-                console.log("=========================================");
-
                 if (["blue", "red"].includes(choice) && settlementResult.tie) {
                     result.refund += betAmount;
                 }
@@ -48,14 +42,13 @@ export class SettleGameRoundConsumer extends Core.BaseEventConsumers.SettleGameR
     }
 
     async settleRound() {
-        const round = await this.roundsRepository.findOne({ id: this.gameData.roundId }).exec();
+        const round = await this.roundsRepository.findOne({ id: this.gameData.roundId }).lean().exec();
 
         if (round) {
             this.gameData.roundId = round.id + 1;
-            round.settled = true;
 
             await this.settleBets(round);
-            await round.save();
+            await this.roundsRepository.updateOne({ id: round.id }, { settled: true });
         }
     }
 
@@ -68,8 +61,6 @@ export class SettleGameRoundConsumer extends Core.BaseEventConsumers.SettleGameR
             await Promise.all(
                 bets.map(async (bet) => {
                     const betResult = this.calculateBetResult(settlementResult, bet, odds);
-                    console.log(odds);
-                    console.log(betResult);
 
                     bet.betwin = betResult.totalWin;
                     bet.thanhtoan = true;
