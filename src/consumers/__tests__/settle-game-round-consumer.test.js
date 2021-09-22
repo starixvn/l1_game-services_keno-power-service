@@ -45,7 +45,7 @@ const definition = {
 const endGame = jest.fn();
 
 /** @type {mongoose.Model}*/
-const roundsRepository = { findOne: () => {} };
+const roundsRepository = { findOne: () => {}, updateOne: jest.fn() };
 
 /** @type {RoundResultPublisher}*/
 const roundResultPublisher = stub(RoundResultPublisher);
@@ -137,8 +137,12 @@ describe("settle game round consumer instance", () => {
             // arrange
             spyOn(roundsRepository, "findOne").and.callFake(() => {
                 return {
-                    exec: () => {
-                        return null;
+                    lean: () => {
+                        return {
+                            exec: () => {
+                                return null;
+                            },
+                        };
                     },
                 };
             });
@@ -156,8 +160,12 @@ describe("settle game round consumer instance", () => {
             const round = { id: 1, save: jest.fn(), settled: false };
             spyOn(roundsRepository, "findOne").and.callFake(() => {
                 return {
-                    exec: () => {
-                        return round;
+                    lean: () => {
+                        return {
+                            exec: () => {
+                                return round;
+                            },
+                        };
                     },
                 };
             });
@@ -168,8 +176,7 @@ describe("settle game round consumer instance", () => {
 
             // assert
             expect(consumer.settleBets).toHaveBeenCalled();
-            expect(round.save).toHaveBeenCalled();
-            expect(round.settled).toBeTruthy();
+            expect(roundsRepository.updateOne).toHaveBeenCalled();
         });
     });
 
