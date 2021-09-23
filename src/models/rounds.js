@@ -4,6 +4,7 @@ const settlementResultSchema = new mongoose.Schema(
     {
         blue: { type: Boolean, default: false },
         red: { type: Boolean, default: false },
+        tie: { type: Boolean, default: false },
         big: { type: Boolean, default: false },
         small: { type: Boolean, default: false },
         odd: { type: Boolean, default: false },
