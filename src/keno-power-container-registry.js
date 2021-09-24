@@ -3,6 +3,7 @@ import { GameDefinition, MultipleGamesContainerRegistry } from "sc-multiple-game
 import { GameCron } from "./crons/game-cron";
 import { SettleGameRoundConsumer, RoundResultConsumer } from "./consumers";
 import { RoundResultPublisher } from "./publishers/round-result-publisher";
+import { RoundQuery } from "./query-apis/round-query";
 
 export default class KenoPowerContainerRegistry extends MultipleGamesContainerRegistry {
     /**
@@ -48,6 +49,13 @@ export default class KenoPowerContainerRegistry extends MultipleGamesContainerRe
 
         this.container.register({
             roundResultPublisher: asClass(RoundResultPublisher).singleton(),
+        });
+    }
+
+    registerApis() {
+        super.registerApis();
+        this.container.register({
+            roundQuery: asClass(RoundQuery).singleton(),
         });
     }
 }
