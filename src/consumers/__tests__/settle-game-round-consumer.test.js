@@ -118,7 +118,7 @@ describe("settle game round consumer instance", () => {
                     totalBetAmount: 100,
                     totalWin: 0,
                     netWin: 0,
-                    totalLost: 100,
+                    totalLost: 0,
                     refund: 100,
                     winningByChoices: {},
                 },

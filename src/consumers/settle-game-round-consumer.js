@@ -8,11 +8,9 @@ export class SettleGameRoundConsumer extends Core.BaseEventConsumers.SettleGameR
                 const originalOdds = odds[choice] || 1;
                 const effectiveOdds = bet.freeBet ? originalOdds - 1 : originalOdds;
                 const winAmount = win ? betAmount * effectiveOdds : 0;
+                const refund = ["blue", "red"].includes(choice) && settlementResult.tie ? betAmount : 0;
 
-                if (["blue", "red"].includes(choice) && settlementResult.tie) {
-                    result.refund += betAmount;
-                }
-
+                result.refund += refund;
                 result.totalBetAmount += betAmount;
                 result.totalWin += winAmount;
 
@@ -20,7 +18,7 @@ export class SettleGameRoundConsumer extends Core.BaseEventConsumers.SettleGameR
                     result.winningByChoices[choice] = winAmount;
                     result.netWin += winAmount - betAmount;
                 } else {
-                    result.totalLost += betAmount;
+                    result.totalLost += betAmount - refund;
                 }
 
                 return result;
