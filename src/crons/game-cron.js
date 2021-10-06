@@ -87,6 +87,7 @@ export class GameCron extends Core.Crons.BaseGameCron {
             } else {
                 this.gameData.roundId = lastRound.id;
                 this.gameData.remainingTime = 0;
+                this.gameData.currentMD5 = lastRound.md5;
 
                 await this.checkGameStatus();
             }

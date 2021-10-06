@@ -3,6 +3,7 @@ import { GameDefinition } from "sc-multiple-games-base";
 import appConfigs from "./app-configs";
 import gameSettings from "./game-settings";
 import KenoPowerContainerRegistry from "./keno-power-container-registry";
+import { GameData } from "./game-data";
 
 export class KenoPowerApp extends Core.BaseGameApp {
     /**
@@ -13,7 +14,7 @@ export class KenoPowerApp extends Core.BaseGameApp {
             const container = new KenoPowerContainerRegistry().register(
                 this.appConfigs,
                 definition,
-                new Core.GameData(definition.durations.wholeRound)
+                new GameData(definition.durations.wholeRound)
             );
             await this.startGame(container);
         });

@@ -31,6 +31,7 @@ export class RoundResultConsumer {
         const resultKey = `[${totalBlue};${totalRed}]${randomString()}`;
         const md5 = createHashMD5(resultKey);
 
+        this.gameData.currentMD5 = md5;
         await this.roundsRepository.create({
             id: this.gameData.roundId,
             result,
