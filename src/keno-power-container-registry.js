@@ -2,7 +2,7 @@ import { asClass, asValue } from "awilix";
 import { GameDefinition, MultipleGamesContainerRegistry } from "sc-multiple-games-base";
 import { GameCron } from "./crons/game-cron";
 import { SettleGameRoundConsumer, RoundResultConsumer, InGameConsumer } from "./consumers";
-import { RoundResultPublisher } from "./publishers/round-result-publisher";
+import { RoundResultPublisher, UserBetResultPublisher } from "./publishers";
 import { RoundQuery } from "./query-apis/round-query";
 
 export default class KenoPowerContainerRegistry extends MultipleGamesContainerRegistry {
@@ -50,6 +50,7 @@ export default class KenoPowerContainerRegistry extends MultipleGamesContainerRe
 
         this.container.register({
             roundResultPublisher: asClass(RoundResultPublisher).singleton(),
+            userBetResultPublisher: asClass(UserBetResultPublisher).singleton(),
         });
     }
 
