@@ -7,8 +7,8 @@ export class SettleGameRoundConsumer extends Core.BaseEventConsumers.SettleGameR
                 const betAmount = bet[choice] ?? 0;
                 const originalOdds = odds[choice] || 1;
                 const effectiveOdds = bet.freeBet ? originalOdds - 1 : originalOdds;
-                const winAmount = win ? betAmount * effectiveOdds : 0;
                 const refund = ["blue", "red"].includes(choice) && settlementResult.tie ? betAmount : 0;
+                const winAmount = win ? betAmount * effectiveOdds : refund;
 
                 result.refund += refund;
                 result.totalBetAmount += betAmount;
@@ -60,10 +60,12 @@ export class SettleGameRoundConsumer extends Core.BaseEventConsumers.SettleGameR
                 bets.map(async (bet) => {
                     const betResult = this.calculateBetResult(settlementResult, bet, odds);
 
-                    bet.betwin = betResult.totalWin;
+                    bet.betwin = betResult.totalWin - betResult.refund;
+                    bet.refund = betResult.refund;
                     bet.thanhtoan = true;
 
                     await bet.save();
+
                     await this.callEndGame(bet, roundId, time, betResult);
 
                     this.captureBetResult(bet.uid, betResult);

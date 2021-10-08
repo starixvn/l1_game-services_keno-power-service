@@ -116,11 +116,13 @@ describe("settle game round consumer instance", () => {
                 bet: { blue: 100 },
                 expectResult: {
                     totalBetAmount: 100,
-                    totalWin: 0,
+                    totalWin: 100,
                     netWin: 0,
                     totalLost: 0,
                     refund: 100,
-                    winningByChoices: {},
+                    winningByChoices: {
+                        blue: 100,
+                    },
                 },
             },
         ];
