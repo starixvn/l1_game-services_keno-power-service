@@ -9,7 +9,7 @@ export default [
         id: 40,
         name: "KenoPower1",
         durations: {
-            wholeRound: 51,
+            wholeRound: 50,
             placingBets: 42,
             lockingBet: 5,
         },
@@ -28,7 +28,7 @@ export default [
         id: 41,
         name: "KenoPower2",
         durations: {
-            wholeRound: 55,
+            wholeRound: 54,
             placingBets: 42,
             lockingBet: 5,
         },
