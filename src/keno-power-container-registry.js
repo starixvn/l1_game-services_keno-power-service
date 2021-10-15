@@ -4,6 +4,7 @@ import { GameCron } from "./crons/game-cron";
 import { SettleGameRoundConsumer, RoundResultConsumer, InGameConsumer } from "./consumers";
 import { RoundResultPublisher } from "./publishers";
 import { RoundQuery } from "./query-apis/round-query";
+import AdminMonitorConsumer from "./consumers/admin-monitor-consumer";
 
 export default class KenoPowerContainerRegistry extends MultipleGamesContainerRegistry {
     /**
@@ -42,6 +43,7 @@ export default class KenoPowerContainerRegistry extends MultipleGamesContainerRe
             settleGameRoundConsumer: asClass(SettleGameRoundConsumer).singleton().proxy(),
             roundResultConsumer: asClass(RoundResultConsumer).singleton(),
             inGameConsumer: asClass(InGameConsumer).singleton(),
+            adminMonitorConsumer: asClass(AdminMonitorConsumer).singleton(),
         });
     }
 
