@@ -101,4 +101,9 @@ export class GameCron extends Core.Crons.BaseGameCron {
     isStartingTime(remainingTime, durations) {
         return remainingTime === durations.placingBets;
     }
+
+    resetForNewRound() {
+        this.gameData.ingame = {};
+        this.gameData.totalBets = {};
+    }
 }
