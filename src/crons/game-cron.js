@@ -1,6 +1,7 @@
 import cron from "cron";
 import mongoose from "mongoose";
 import { Core } from "sc-game-base";
+
 import { RoundResultConsumer } from "../consumers";
 
 export class GameCron extends Core.Crons.BaseGameCron {
@@ -21,6 +22,8 @@ export class GameCron extends Core.Crons.BaseGameCron {
         roundsRepository,
         archiveStatusesRepository,
         notificationRepository,
+        exchangeRatesRepository,
+        currencyGroupGamesRepository,
         roundResultConsumer,
     }) {
         super({
@@ -35,6 +38,8 @@ export class GameCron extends Core.Crons.BaseGameCron {
             roundsRepository,
             archiveStatusesRepository,
             notificationRepository,
+            exchangeRatesRepository,
+            currencyGroupGamesRepository,
         });
 
         this.roundResultConsumer = roundResultConsumer;
@@ -86,6 +91,9 @@ export class GameCron extends Core.Crons.BaseGameCron {
         } else {
             this.gameData.roundId = await this.getLastArchiveRound();
         }
+
+        await this.updateCurrencyGroupGames();
+        await this.updateExchangeRates();
 
         job.start();
     }

@@ -33,6 +33,7 @@ const schema = new mongoose.Schema({
     md5: { type: String },
     settled: { type: Boolean, default: false },
     time: { type: Date, default: new Date() },
+    exchangeRateId: { type: Number, require: true },
 });
 
 export default (modelName) => {
