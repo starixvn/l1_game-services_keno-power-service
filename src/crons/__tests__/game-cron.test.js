@@ -64,6 +64,15 @@ describe("game cron instance", () => {
     /** @type {RoundResultConsumer}*/
     const roundResultConsumer = stub(RoundResultConsumer);
 
+    /** @type {mongoose.Model}*/
+    const partnerConfigRepository = stubMongooseModelStupidly(mongoose.Model);
+
+    /** @type {mongoose.Model}*/
+    const currencyGroupGamesRepository = stubMongooseModelStupidly(mongoose.Model);
+
+    /** @type {mongoose.Model}*/
+    const exchangeRatesRepository = stubMongooseModelStupidly(mongoose.Model);
+
     const gameCron = new GameCron({
         definition,
         gameData,
@@ -76,6 +85,9 @@ describe("game cron instance", () => {
         roundsRepository,
         archiveStatusesRepository,
         notificationRepository,
+        exchangeRatesRepository,
+        currencyGroupGamesRepository,
+        partnerConfigRepository,
         roundResultConsumer,
     });
 
