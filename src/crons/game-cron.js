@@ -25,6 +25,8 @@ export class GameCron extends Core.Crons.BaseGameCron {
         exchangeRatesRepository,
         currencyGroupGamesRepository,
         partnerConfigRepository,
+        currencyGroupRepository,
+        currencyRepository,
         roundResultConsumer,
     }) {
         super({
@@ -42,6 +44,8 @@ export class GameCron extends Core.Crons.BaseGameCron {
             exchangeRatesRepository,
             currencyGroupGamesRepository,
             partnerConfigRepository,
+            currencyGroupRepository,
+            currencyRepository,
         });
 
         this.roundResultConsumer = roundResultConsumer;
@@ -94,7 +98,7 @@ export class GameCron extends Core.Crons.BaseGameCron {
             this.gameData.roundId = await this.getLastArchiveRound();
         }
 
-        await this.updateCurrencyGroupGames();
+        await this.getSettingForNewRound();
         await this.updateExchangeRates();
 
         job.start();
