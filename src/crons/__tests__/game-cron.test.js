@@ -83,6 +83,46 @@ describe("game cron instance", () => {
         expect(gameCron instanceof Core.Crons.BaseGameCron).toBeTruthy();
     });
 
+    describe("checkGameStatus tests", () => {
+        it("game is enabled, should update gameData.gameConfigs and call publishStartGame", async () => {
+            const gameConfigs = { enabled: true };
+            gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
+
+            gameData.disabled = false;
+            gameData.remainingTime = definition.durations.wholeRound;
+
+            await gameCron.checkGameStatus();
+
+            expect(gameData.gameConfigs).toEqual(gameConfigs);
+            expect(gameStatusPublisher.publishStartGame).toHaveBeenCalled();
+        });
+
+        it("game is disabled, should reset gameData.remainingTime, update game configs and call publishDisableGameStatus", async () => {
+            const gameConfigs = { enabled: false };
+            gameData.disabled = false;
+            gameData.remainingTime = definition.durations.wholeRound;
+            gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
+
+            await gameCron.checkGameStatus();
+
+            expect(gameData.gameConfigs).toEqual(gameConfigs);
+            expect(gameData.remainingTime).toEqual(definition.durations.wholeRound);
+            expect(gameConfigsRepository.updateOne).toHaveBeenCalled();
+            expect(gameStatusPublisher.publishDisableGameStatus).toHaveBeenCalled();
+        });
+
+        it("game is currently disabled, then being enabled, should call publishEnablingGameStatus", async () => {
+            const gameConfigs = { enabled: true };
+            gameData.disabled = true;
+            gameData.remainingTime = definition.durations.wholeRound;
+            gameConfigsRepository.findOne().lean().exec.mockReturnValueOnce(gameConfigs);
+
+            await gameCron.checkGameStatus();
+
+            expect(gameData.gameConfigs).toEqual(gameConfigs);
+            expect(gameStatusPublisher.publishEnablingGameStatus).toHaveBeenCalled();
+        });
+    });
     describe("proceed tests", () => {
         it("should call checkGameStatus after each round", async () => {
             // arrange
@@ -165,21 +205,17 @@ describe("game cron instance", () => {
         });
 
         describe("when last round is not settled", () => {
-            it("should call checkGameStatus and set remaining time to zero", async () => {
+            it("should call checkGameStatus and set current running round to latest round", async () => {
                 roundsRepository.findOne().lean().exec.mockReturnValueOnce({
                     id: 1,
                     settled: false,
                 });
-
-                spyOn(gameCron, "checkGameStatus");
 
                 // act
                 await gameCron.start();
 
                 // arrange
                 expect(gameData.roundId).toStrictEqual(1);
-                expect(gameData.remainingTime).toStrictEqual(0);
-                expect(gameCron.checkGameStatus).toHaveBeenCalled();
             });
         });
     });

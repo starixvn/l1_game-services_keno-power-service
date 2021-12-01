@@ -82,20 +82,45 @@ export class GameCron extends Core.Crons.BaseGameCron {
         );
 
         if (lastRound) {
-            if (lastRound.settled) {
-                this.gameData.roundId = lastRound.id + 1;
-            } else {
-                this.gameData.roundId = lastRound.id;
-                this.gameData.remainingTime = 0;
-                this.gameData.currentMD5 = lastRound.md5;
-
-                await this.checkGameStatus();
-            }
+            this.gameData.roundId = lastRound.settled ? lastRound.id + 1 : lastRound.id;
         } else {
             this.gameData.roundId = await this.getLastArchiveRound();
         }
 
         job.start();
+    }
+
+    async checkGameStatus() {
+        const { configName, durations } = this.definition;
+        const configs = await this.gameConfigsRepository.findOne({ name: configName }).lean().exec();
+        const previouslyDisabled = this.gameData.disabled;
+        const configuredlyDisabled = !configs || !configs.enabled;
+
+        if (previouslyDisabled) {
+            if (this.gameData.delayStartTime > 0) {
+                this.gameData.delayStartTime--;
+            } else if (!configuredlyDisabled) {
+                this.gameData.delayStartTime = configs?.delayStartTime ?? 0;
+            }
+        }
+
+        this.gameData.umMessages =
+            (await this.notificationRepository.findOne({ gameName: configName, displayKind: 2 }, "messages").lean().exec())?.messages ?? {};
+
+        this.gameData.gameConfigs = configs ?? {};
+        this.gameData.disabled = configuredlyDisabled || this.gameData.delayStartTime > 0;
+
+        if (this.gameData.disabled) {
+            this.gameData.remainingTime = durations.wholeRound;
+            this.gameStatusPublisher.publishDisableGameStatus();
+
+            await this.gameConfigsRepository.updateOne({ name: configName }, { disabledround: this.gameData.roundId });
+        } else if (previouslyDisabled) {
+            this.gameData.remainingTime = 0;
+            this.gameStatusPublisher.publishEnablingGameStatus();
+        } else {
+            this.gameStatusPublisher.publishStartGame();
+        }
     }
 
     isStartingTime(remainingTime, durations) {
