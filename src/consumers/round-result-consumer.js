@@ -20,9 +20,10 @@ export class RoundResultConsumer {
     }
 
     async generateResult() {
+        const { roundId, exchangeRates } = this.gameData;
         const resultFromAdmin = this.gameData.settlementResultFromAdmin;
 
-        const result = this.gameData.roundId === resultFromAdmin.roundId ? resultFromAdmin.result : this.definition.generateResult();
+        const result = roundId === resultFromAdmin.roundId ? resultFromAdmin.result : this.definition.generateResult();
 
         const totalBlue = sumArrayNumber(result.blue);
         const totalRed = sumArrayNumber(result.red);
@@ -33,12 +34,13 @@ export class RoundResultConsumer {
 
         this.gameData.currentMD5 = md5;
         await this.roundsRepository.create({
-            id: this.gameData.roundId,
+            id: roundId,
             result,
             settlementResult,
             resultKey,
             md5,
             time: new Date(),
+            exchangeRateId: exchangeRates.exId,
         });
 
         Object.assign(this.gameData, { result, settlementResult, totalBlue, totalRed, resultKey });
