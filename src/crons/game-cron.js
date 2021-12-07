@@ -109,6 +109,13 @@ export class GameCron extends Core.Crons.BaseGameCron {
         const configs = await this.gameConfigsRepository.findOne({ name: configName }).lean().exec();
         const previouslyDisabled = this.gameData.disabled;
         const configuredlyDisabled = !configs || !configs.enabled;
+        await this.getSettingForNewRound();
+
+        if (this.gameData.gameConfigs.reloadExchange) {
+            await this.updateExchangeRates();
+            await this.gameConfigsRepository.updateOne({ name: configName }, { reloadExchange: false });
+            this.gameData.gameConfigs.reloadExchange = false;
+        }
 
         if (previouslyDisabled) {
             if (this.gameData.delayStartTime > 0) {
