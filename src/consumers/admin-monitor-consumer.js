@@ -16,6 +16,8 @@ export default class AdminMonitorConsumer extends Core.BaseEventConsumers.AdminM
                 result: lastRound.result,
                 settlementResult: lastRound.settlementResult,
                 remainingTime: this.gameData.remainingTime,
+                currencies: this.gameData.currencies,
+                exchangeRates: this.gameData.exchangeRates,
             };
 
             this.adminPublisher.publishToAdmin(socketClient, payload);
