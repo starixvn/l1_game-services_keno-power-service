@@ -29,7 +29,7 @@ export class RoundResultConsumer {
         const totalRed = sumArrayNumber(result.red);
         const settlementResult = this.definition.settle({ totalBlue, totalRed }, true);
 
-        const resultKey = `[${totalBlue};${totalRed}]${randomString()}`;
+        const resultKey = `{${totalBlue};${totalRed}}_{#${roundId}${randomString()}}`;
         const md5 = createHashMD5(resultKey);
 
         this.gameData.currentMD5 = md5;
