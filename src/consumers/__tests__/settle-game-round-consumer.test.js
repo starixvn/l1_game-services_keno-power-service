@@ -4,6 +4,9 @@ import { Core } from "sc-game-base";
 import { choices, choicesMapper } from "../../constants";
 import { RoundResultPublisher } from "../../publishers/round-result-publisher";
 import { SettleGameRoundConsumer } from "../settle-game-round-consumer";
+import { decrypt } from "../../helpers/crypto-helper";
+
+jest.mock("../../helpers/crypto-helper");
 
 const gameData = new Core.GameData(30);
 
@@ -74,6 +77,7 @@ describe("settle game round consumer instance", () => {
     describe("calculateBetResult tests", () => {
         const testCases = [
             {
+                encryptedResult: {},
                 settlementResult: {
                     blue: true,
                     red: false,
@@ -100,6 +104,7 @@ describe("settle game round consumer instance", () => {
                 },
             },
             {
+                encryptedResult: {},
                 settlementResult: {
                     blue: false,
                     red: false,
@@ -128,6 +133,9 @@ describe("settle game round consumer instance", () => {
         ];
 
         it.each(testCases)("should return correct result", ({ settlementResult, bet, expectResult }) => {
+            decrypt.mockReturnValueOnce(`{ "blue": [], "red": [] }`);
+            consumer.definition.settle = jest.fn().mockReturnValueOnce(settlementResult);
+
             const actualResult = consumer.calculateBetResult(settlementResult, bet, gameData.gameConfigs.odds);
 
             expect(actualResult).toEqual(expectResult);
@@ -159,7 +167,7 @@ describe("settle game round consumer instance", () => {
 
         it("should call settleBets and settle round when current round exist", async () => {
             // arrange
-            const round = { id: 1, save: jest.fn(), settled: false };
+            const round = { id: 1, save: jest.fn(), settled: false, encryptedResult: {} };
             spyOn(roundsRepository, "findOne").and.callFake(() => {
                 return {
                     lean: () => {
@@ -172,11 +180,14 @@ describe("settle game round consumer instance", () => {
                 };
             });
             spyOn(consumer, "settleBets");
+            consumer.definition.settle = jest.fn();
+            decrypt.mockReturnValueOnce(`{ "blue": [], "red": [] }`);
 
             // act
             await consumer.settleRound();
 
             // assert
+            expect(consumer.definition.settle).toHaveBeenCalled();
             expect(consumer.settleBets).toHaveBeenCalled();
             expect(roundsRepository.updateOne).toHaveBeenCalled();
         });

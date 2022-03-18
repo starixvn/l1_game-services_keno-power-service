@@ -1,4 +1,6 @@
 import { Core } from "sc-game-base";
+import { sumArrayNumber } from "../helpers/array-helper";
+import { decrypt } from "../helpers/crypto-helper";
 
 export class SettleGameRoundConsumer extends Core.BaseEventConsumers.SettleGameRoundConsumer {
     calculateBetResult(settlementResult, bet, odds) {
@@ -45,8 +47,13 @@ export class SettleGameRoundConsumer extends Core.BaseEventConsumers.SettleGameR
         if (round) {
             this.gameData.roundId = round.id + 1;
 
-            await this.settleBets(round);
-            await this.roundsRepository.updateOne({ id: round.id }, { settled: true });
+            const result = JSON.parse(decrypt(round.encryptedResult));
+            const totalBlue = sumArrayNumber(result.blue);
+            const totalRed = sumArrayNumber(result.red);
+            const settlementResult = this.definition.settle({ totalBlue, totalRed }, true);
+
+            await this.settleBets({ ...round, result, settlementResult });
+            await this.roundsRepository.updateOne({ id: round.id }, { settled: true, result, settlementResult });
         }
     }
 
@@ -77,7 +84,7 @@ export class SettleGameRoundConsumer extends Core.BaseEventConsumers.SettleGameR
         this.roundResultPublisher.publishRoundResult({
             result,
             settlementResult,
-            resultKey,
+            resultKey: decrypt(resultKey),
             roundId,
         });
     }

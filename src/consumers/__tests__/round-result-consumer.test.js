@@ -67,7 +67,6 @@ describe("Round result consumer instance", () => {
 
             // assert
             expect(definition.generateResult).toHaveBeenCalled();
-            expect(definition.settle).toHaveBeenCalled();
             expect(roundResultPublisher.publishMD5).toHaveBeenCalled();
         });
     });
