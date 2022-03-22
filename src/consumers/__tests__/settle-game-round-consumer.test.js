@@ -5,8 +5,10 @@ import { choices, choicesMapper } from "../../constants";
 import { RoundResultPublisher } from "../../publishers/round-result-publisher";
 import { SettleGameRoundConsumer } from "../settle-game-round-consumer";
 import { decrypt } from "../../helpers/crypto-helper";
+import { sumArrayNumber } from "../../helpers/array-helper";
 
 jest.mock("../../helpers/crypto-helper");
+jest.mock("../../helpers/array-helper");
 
 const gameData = new Core.GameData(30);
 
@@ -45,10 +47,8 @@ const definition = {
     defaultBetTracks: {},
 };
 
-const endGame = jest.fn();
-
 /** @type {mongoose.Model}*/
-const roundsRepository = { findOne: () => {}, updateOne: jest.fn() };
+const roundsRepository = stubMongooseModelStupidly(mongoose.Model);
 
 /** @type {RoundResultPublisher}*/
 const roundResultPublisher = stub(RoundResultPublisher);
@@ -59,25 +59,21 @@ const userBetResultPublisher = stub(Core.BaseEventPublishers.UserBetResultPublis
 /** @type {mongoose.Model}*/
 const betsRepository = stubMongooseModelStupidly(mongoose.Model);
 
-const consumer = new SettleGameRoundConsumer({
-    definition: definition,
-    gameData: gameData,
-    roundResultPublisher: roundResultPublisher,
-    userBetResultPublisher: userBetResultPublisher,
-    endGame: endGame,
-    roundsRepository: roundsRepository,
-    betsRepository: betsRepository,
-});
-
 describe("settle game round consumer instance", () => {
     it("should instance of Core.BaseEventConsumers.SettleGameRoundConsumer", () => {
+        // act
+        const consumer = new SettleGameRoundConsumer({
+            definition: definition,
+            gameData: gameData,
+        });
+
+        // assert
         expect(consumer instanceof Core.BaseEventConsumers.SettleGameRoundConsumer).toBeTruthy();
     });
 
     describe("calculateBetResult tests", () => {
         const testCases = [
             {
-                encryptedResult: {},
                 settlementResult: {
                     blue: true,
                     red: false,
@@ -104,7 +100,6 @@ describe("settle game round consumer instance", () => {
                 },
             },
             {
-                encryptedResult: {},
                 settlementResult: {
                     blue: false,
                     red: false,
@@ -133,112 +128,540 @@ describe("settle game round consumer instance", () => {
         ];
 
         it.each(testCases)("should return correct result", ({ settlementResult, bet, expectResult }) => {
-            decrypt.mockReturnValueOnce(`{ "blue": [], "red": [] }`);
-            consumer.definition.settle = jest.fn().mockReturnValueOnce(settlementResult);
+            // arrange
+            const consumer = new SettleGameRoundConsumer({
+                definition: definition,
+                gameData: gameData,
+                roundResultPublisher: roundResultPublisher,
+                userBetResultPublisher: userBetResultPublisher,
+                roundsRepository: roundsRepository,
+                betsRepository: betsRepository,
+            });
 
+            // act
             const actualResult = consumer.calculateBetResult(settlementResult, bet, gameData.gameConfigs.odds);
 
+            // assert
             expect(actualResult).toEqual(expectResult);
         });
     });
 
     describe("settleRound tests", () => {
-        it("should not call settleBets when current round not found", async () => {
-            // arrange
-            spyOn(roundsRepository, "findOne").and.callFake(() => {
-                return {
-                    lean: () => {
-                        return {
-                            exec: () => {
-                                return null;
-                            },
-                        };
-                    },
-                };
+        const roundId = 123;
+        describe("when round can not be found", () => {
+            beforeEach(() => {
+                roundsRepository.findOne({ id: roundId }).lean().exec.mockReturnValueOnce(null);
             });
-            spyOn(consumer, "settleBets");
 
-            // act
-            await consumer.settleRound();
+            it("should not call settleBets", async () => {
+                // arrange
+                const consumer = new SettleGameRoundConsumer({
+                    definition: definition,
+                    gameData: gameData,
+                    roundResultPublisher: roundResultPublisher,
+                    userBetResultPublisher: userBetResultPublisher,
+                    roundsRepository: roundsRepository,
+                    betsRepository: betsRepository,
+                });
+                consumer.gameData.roundId = roundId;
+                consumer.settleBets = jest.fn();
 
-            // assert
-            expect(consumer.settleBets).not.toHaveBeenCalled();
+                // act
+                await consumer.settleRound();
+
+                // assert
+                expect(consumer.settleBets).not.toHaveBeenCalled();
+            });
+
+            it("should not call update round repository", async () => {
+                // arrange
+                const consumer = new SettleGameRoundConsumer({
+                    definition: definition,
+                    gameData: gameData,
+                    roundResultPublisher: roundResultPublisher,
+                    userBetResultPublisher: userBetResultPublisher,
+                    roundsRepository: roundsRepository,
+                    betsRepository: betsRepository,
+                });
+                consumer.gameData.roundId = roundId;
+
+                // act
+                await consumer.settleRound();
+
+                // assert
+                expect(roundsRepository.updateOne).not.toHaveBeenCalled();
+            });
         });
 
-        it("should call settleBets and settle round when current round exist", async () => {
-            // arrange
-            const round = { id: 1, save: jest.fn(), settled: false, encryptedResult: {} };
-            spyOn(roundsRepository, "findOne").and.callFake(() => {
-                return {
-                    lean: () => {
-                        return {
-                            exec: () => {
-                                return round;
-                            },
-                        };
-                    },
-                };
+        describe("when exist round", () => {
+            const round = { id: roundId, encryptedResult: { content: "asd" } };
+            beforeEach(() => {
+                roundsRepository.findOne({ id: roundId }).lean().exec.mockReturnValueOnce(round);
             });
-            spyOn(consumer, "settleBets");
-            consumer.definition.settle = jest.fn();
-            decrypt.mockReturnValueOnce(`{ "blue": [], "red": [] }`);
 
-            // act
-            await consumer.settleRound();
+            it("should call decrypt with expected param", async () => {
+                // arrange
+                const consumer = new SettleGameRoundConsumer({
+                    definition: definition,
+                    gameData: gameData,
+                    roundResultPublisher: roundResultPublisher,
+                    userBetResultPublisher: userBetResultPublisher,
+                    roundsRepository: roundsRepository,
+                    betsRepository: betsRepository,
+                });
+                consumer.gameData.roundId = roundId;
+                consumer.definition.settle = jest.fn();
+                consumer.settleBets = jest.fn();
+                sumArrayNumber.mockReturnValue(0);
+                decrypt.mockReturnValue(JSON.stringify({}));
 
-            // assert
-            expect(consumer.definition.settle).toHaveBeenCalled();
-            expect(consumer.settleBets).toHaveBeenCalled();
-            expect(roundsRepository.updateOne).toHaveBeenCalled();
+                // act
+                await consumer.settleRound();
+
+                // assert
+                expect(decrypt).toHaveBeenCalledWith(round.encryptedResult);
+            });
+
+            it("should call sumArrayNumber", async () => {
+                // arrange
+                const consumer = new SettleGameRoundConsumer({
+                    definition: definition,
+                    gameData: gameData,
+                    roundResultPublisher: roundResultPublisher,
+                    userBetResultPublisher: userBetResultPublisher,
+                    roundsRepository: roundsRepository,
+                    betsRepository: betsRepository,
+                });
+                const result = { blue: [10, 60], red: [10, 70] };
+                decrypt.mockReturnValueOnce(JSON.stringify(result));
+                sumArrayNumber.mockReturnValue(0);
+                consumer.gameData.roundId = roundId;
+                consumer.definition.settle = jest.fn();
+                consumer.settleBets = jest.fn();
+
+                // act
+                await consumer.settleRound();
+
+                // assert
+                expect(sumArrayNumber).toHaveBeenCalledTimes(2);
+            });
+
+            it("should call get settlementResult with expected param", async () => {
+                // arrange
+                const consumer = new SettleGameRoundConsumer({
+                    definition: definition,
+                    gameData: gameData,
+                    roundResultPublisher: roundResultPublisher,
+                    userBetResultPublisher: userBetResultPublisher,
+                    roundsRepository: roundsRepository,
+                    betsRepository: betsRepository,
+                });
+                const result = { blue: [10, 60], red: [10, 70] };
+                decrypt.mockReturnValueOnce(JSON.stringify(result));
+                sumArrayNumber.mockReturnValueOnce(70).mockReturnValueOnce(80);
+                consumer.gameData.roundId = roundId;
+                consumer.definition.settle = jest.fn();
+                consumer.settleBets = jest.fn();
+
+                // act
+                await consumer.settleRound();
+
+                // assert
+                expect(consumer.definition.settle).toHaveBeenCalledWith({ totalBlue: 70, totalRed: 80 }, true);
+            });
+
+            it("should call settleBets", async () => {
+                // arrange
+                const consumer = new SettleGameRoundConsumer({
+                    definition: definition,
+                    gameData: gameData,
+                    roundResultPublisher: roundResultPublisher,
+                    userBetResultPublisher: userBetResultPublisher,
+                    roundsRepository: roundsRepository,
+                    betsRepository: betsRepository,
+                });
+                const result = { blue: [10, 60], red: [10, 70] };
+                decrypt.mockReturnValueOnce(JSON.stringify(result));
+                sumArrayNumber.mockReturnValueOnce(70).mockReturnValueOnce(80);
+                const settlementResult = { red: true, blue: false };
+                consumer.gameData.roundId = roundId;
+                consumer.definition.settle = jest.fn({ totalBlue: 70, totalRed: 80 }, true).mockReturnValue(settlementResult);
+                consumer.settleBets = jest.fn();
+
+                // act
+                await consumer.settleRound();
+
+                // assert
+                expect(consumer.settleBets).toHaveBeenCalledWith({ ...round, result, settlementResult });
+            });
+
+            it("should update round", async () => {
+                // arrange
+                const consumer = new SettleGameRoundConsumer({
+                    definition: definition,
+                    gameData: gameData,
+                    roundResultPublisher: roundResultPublisher,
+                    userBetResultPublisher: userBetResultPublisher,
+                    roundsRepository: roundsRepository,
+                    betsRepository: betsRepository,
+                });
+                const result = { blue: [10, 60], red: [10, 70] };
+                decrypt.mockReturnValueOnce(JSON.stringify(result));
+                sumArrayNumber.mockReturnValueOnce(70).mockReturnValueOnce(80);
+                const settlementResult = { red: true, blue: false };
+                consumer.gameData.roundId = roundId;
+                consumer.definition.settle = jest.fn({ totalBlue: 70, totalRed: 80 }, true).mockReturnValue(settlementResult);
+                consumer.settleBets = jest.fn();
+
+                // act
+                await consumer.settleRound();
+
+                // assert
+                expect(roundsRepository.updateOne).toHaveBeenCalledWith({ id: round.id }, { settled: true, result, settlementResult });
+            });
         });
     });
 
     describe("settleBets tests", () => {
-        it("always calls queryBets and publishRoundResult", async () => {
+        const round = {
+            id: 123,
+            result: { red: [10, 60], blue: [10, 50] },
+            settlementResult: { red: true, blue: false },
+            time: new Date(123456),
+            resultKey: { content: "asd" },
+        };
+
+        it("should always call query bets", async () => {
             // arrange
-            const round = { id: 1, fullTime: {}, firstHalf: {}, odds: {} };
-            spyOn(consumer, "queryBets");
+            const consumer = new SettleGameRoundConsumer({
+                definition: definition,
+                gameData: gameData,
+                roundResultPublisher: roundResultPublisher,
+                userBetResultPublisher: userBetResultPublisher,
+                roundsRepository: roundsRepository,
+                betsRepository: betsRepository,
+            });
+            consumer.queryBets = jest.fn();
 
             // act
             await consumer.settleBets(round);
 
             // assert
-            expect(consumer.queryBets).toHaveBeenCalled();
-            expect(roundResultPublisher.publishRoundResult).toHaveBeenCalled();
+            expect(consumer.queryBets).toHaveBeenCalledWith(round.id);
         });
 
-        it("existing bets should settle bet and call end game", async () => {
-            const round = {
-                id: 1,
-                result: {
-                    blue: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
-                    red: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
-                },
-                settlementResult: {
-                    blue: false,
-                    red: false,
-                    tie: true,
-                    big: false,
-                    small: false,
-                    odd: false,
-                    even: false,
-                    blueBig: false,
-                    blueSmall: false,
-                    redBig: false,
-                    redSmall: false,
-                },
-            };
-            spyOn(consumer, "queryBets").and.callFake(() => [{ uid: 1, name: "aaaa", phien: 1, blue: 100, save: jest.fn() }]);
-            spyOn(consumer, "callEndGame");
-            spyOn(consumer, "calculateBetResult").and.callFake(() => ({}));
+        describe("when not bets", () => {
+            it("should not call endGame", async () => {
+                // arrange
+                const consumer = new SettleGameRoundConsumer({
+                    definition: definition,
+                    gameData: gameData,
+                    roundResultPublisher: roundResultPublisher,
+                    userBetResultPublisher: userBetResultPublisher,
+                    roundsRepository: roundsRepository,
+                    betsRepository: betsRepository,
+                });
+                consumer.queryBets = jest.fn(round.id).mockReturnValue([]);
+                consumer.callEndGame = jest.fn();
 
-            // act
-            await consumer.settleBets(round);
+                // act
+                await consumer.settleBets(round);
 
-            // assert
-            expect(consumer.calculateBetResult).toHaveBeenCalled();
-            expect(consumer.queryBets).toHaveBeenCalled();
-            expect(roundResultPublisher.publishRoundResult).toHaveBeenCalled();
+                // assert
+                expect(consumer.callEndGame).not.toHaveBeenCalled();
+            });
+
+            it("should call decrypt with expected param", async () => {
+                // arrange
+                const consumer = new SettleGameRoundConsumer({
+                    definition: definition,
+                    gameData: gameData,
+                    roundResultPublisher: roundResultPublisher,
+                    userBetResultPublisher: userBetResultPublisher,
+                    roundsRepository: roundsRepository,
+                    betsRepository: betsRepository,
+                });
+                consumer.queryBets = jest.fn(round.id).mockReturnValue([]);
+
+                // act
+                await consumer.settleBets(round);
+
+                // assert
+                expect(decrypt).toHaveBeenCalledWith(round.resultKey);
+            });
+
+            it("should publish round result", async () => {
+                // arrange
+                const roundPublisher = stub(RoundResultPublisher);
+                const consumer = new SettleGameRoundConsumer({
+                    definition: definition,
+                    gameData: gameData,
+                    roundResultPublisher: roundPublisher,
+                    userBetResultPublisher: userBetResultPublisher,
+                    roundsRepository: roundsRepository,
+                    betsRepository: betsRepository,
+                });
+                consumer.queryBets = jest.fn(round.id).mockReturnValue([]);
+                decrypt.mockReturnValue("resultKey");
+
+                // act
+                await consumer.settleBets(round);
+
+                // assert
+                expect(roundPublisher.publishRoundResult).toHaveBeenCalledWith({
+                    result: round.result,
+                    settlementResult: round.settlementResult,
+                    resultKey: "resultKey",
+                    roundId: round.id,
+                });
+            });
+        });
+
+        describe("when exist bets", () => {
+            const baseBets = [
+                { uid: 1, rate: { VND: 1000 }, thanhtoan: false, save: jest.fn(), red: 10 },
+                { uid: 2, rate: { VND: 1000 }, thanhtoan: false, save: jest.fn(), blue: 10 },
+            ];
+            it("should call calculateBetResult", async () => {
+                // arrange
+                const consumer = new SettleGameRoundConsumer({
+                    definition: definition,
+                    gameData: gameData,
+                    roundResultPublisher: roundResultPublisher,
+                    userBetResultPublisher: userBetResultPublisher,
+                    roundsRepository: roundsRepository,
+                    betsRepository: betsRepository,
+                });
+                consumer.queryBets = jest.fn(round.id).mockReturnValue(baseBets);
+                consumer.calculateBetResult = jest.fn().mockReturnValue({ totalWin: 0, refund: 0 });
+                consumer.callEndGame = jest.fn();
+                consumer.captureBetResult = jest.fn();
+
+                // act
+                await consumer.settleBets(round);
+
+                // assert
+                expect(consumer.calculateBetResult).toHaveBeenCalledTimes(baseBets.length);
+                expect(consumer.calculateBetResult).toHaveBeenCalledWith(round.settlementResult, baseBets[0], gameData.gameConfigs.odds);
+                expect(consumer.calculateBetResult).toHaveBeenCalledWith(round.settlementResult, baseBets[1], gameData.gameConfigs.odds);
+            });
+
+            describe("update bets", () => {
+                const consumer = new SettleGameRoundConsumer({
+                    definition: definition,
+                    gameData: gameData,
+                    roundResultPublisher: roundResultPublisher,
+                    userBetResultPublisher: userBetResultPublisher,
+                    roundsRepository: roundsRepository,
+                    betsRepository: betsRepository,
+                });
+
+                consumer.callEndGame = jest.fn();
+                consumer.captureBetResult = jest.fn();
+
+                beforeEach(() => {
+                    consumer.calculateBetResult = jest
+                        .fn()
+                        .mockReturnValueOnce({ totalWin: 10, refund: 0 })
+                        .mockReturnValueOnce({ totalWin: 0, refund: 0 });
+                });
+                it("should update betwin", async () => {
+                    // arrange
+                    const bets = [
+                        { uid: 1, rate: { VND: 1000 }, thanhtoan: false, save: jest.fn(), red: 10 },
+                        { uid: 2, rate: { VND: 1000 }, thanhtoan: false, save: jest.fn(), blue: 10 },
+                    ];
+                    consumer.queryBets = jest.fn(round.id).mockReturnValue(bets);
+
+                    // act
+                    await consumer.settleBets(round);
+
+                    // assert
+                    expect(bets[0].betwin).toBe(10);
+                    expect(bets[1].betwin).toBe(0);
+                });
+
+                it("should update refund", async () => {
+                    // arrange
+                    const bets = [
+                        { uid: 1, rate: { VND: 1000 }, thanhtoan: false, save: jest.fn(), red: 10 },
+                        { uid: 2, rate: { VND: 1000 }, thanhtoan: false, save: jest.fn(), blue: 10 },
+                    ];
+                    consumer.queryBets = jest.fn(round.id).mockReturnValue(bets);
+
+                    // act
+                    await consumer.settleBets(round);
+
+                    // assert
+                    expect(bets[0].refund).toBe(0);
+                    expect(bets[1].refund).toBe(0);
+                });
+
+                it("should update thanhtoan", async () => {
+                    // arrange
+                    const bets = [
+                        { uid: 1, rate: { VND: 1000 }, thanhtoan: false, save: jest.fn(), red: 10 },
+                        { uid: 2, rate: { VND: 1000 }, thanhtoan: false, save: jest.fn(), blue: 10 },
+                    ];
+                    consumer.queryBets = jest.fn(round.id).mockReturnValue(bets);
+
+                    // act
+                    await consumer.settleBets(round);
+
+                    // assert
+                    expect(bets[0].thanhtoan).toBeTrue();
+                    expect(bets[1].thanhtoan).toBeTrue();
+                });
+
+                it("should call save", async () => {
+                    // arrange
+                    const bets = [
+                        { uid: 1, rate: { VND: 1000 }, thanhtoan: false, save: jest.fn(), red: 10 },
+                        { uid: 2, rate: { VND: 1000 }, thanhtoan: false, save: jest.fn(), blue: 10 },
+                    ];
+                    consumer.queryBets = jest.fn(round.id).mockReturnValue(bets);
+
+                    // act
+                    await consumer.settleBets(round);
+
+                    // assert
+                    expect(bets[0].save).toHaveBeenCalled();
+                    expect(bets[1].save).toHaveBeenCalled();
+                });
+            });
+
+            it("should call endGame", async () => {
+                // arrange
+                const consumer = new SettleGameRoundConsumer({
+                    definition: definition,
+                    gameData: gameData,
+                    roundResultPublisher: roundResultPublisher,
+                    userBetResultPublisher: userBetResultPublisher,
+                    roundsRepository: roundsRepository,
+                    betsRepository: betsRepository,
+                });
+                consumer.queryBets = jest.fn(round.id).mockReturnValue(baseBets);
+                consumer.calculateBetResult = jest
+                    .fn()
+                    .mockReturnValueOnce({ totalWin: 10, refund: 0 })
+                    .mockReturnValueOnce({ totalWin: 0, refund: 10 });
+                consumer.callEndGame = jest.fn();
+                consumer.captureBetResult = jest.fn();
+
+                // act
+                await consumer.settleBets(round);
+
+                // assert
+                expect(consumer.callEndGame).toHaveBeenCalledTimes(baseBets.length);
+                expect(consumer.callEndGame).toHaveBeenCalledWith(baseBets[0], round.id, round.time, { totalWin: 10, refund: 0 });
+                expect(consumer.callEndGame).toHaveBeenCalledWith(baseBets[1], round.id, round.time, { totalWin: 0, refund: 10 });
+            });
+
+            it("should call captureBetResult", async () => {
+                // arrange
+                const consumer = new SettleGameRoundConsumer({
+                    definition: definition,
+                    gameData: gameData,
+                    roundResultPublisher: roundResultPublisher,
+                    userBetResultPublisher: userBetResultPublisher,
+                    roundsRepository: roundsRepository,
+                    betsRepository: betsRepository,
+                });
+                consumer.queryBets = jest.fn(round.id).mockReturnValue(baseBets);
+                consumer.calculateBetResult = jest
+                    .fn()
+                    .mockReturnValueOnce({ totalWin: 10, refund: 0 })
+                    .mockReturnValueOnce({ totalWin: 0, refund: 0 });
+                consumer.callEndGame = jest.fn();
+                consumer.captureBetResult = jest.fn();
+
+                // act
+                await consumer.settleBets(round);
+
+                // assert
+                expect(consumer.captureBetResult).toHaveBeenCalledTimes(baseBets.length);
+                expect(consumer.captureBetResult).toHaveBeenCalledWith(baseBets[0].uid, { totalWin: 10, refund: 0 }, baseBets[0].rate);
+                expect(consumer.captureBetResult).toHaveBeenCalledWith(baseBets[1].uid, { totalWin: 0, refund: 0 }, baseBets[1].rate);
+            });
+
+            it("should publish to user bet result", async () => {
+                // arrange
+                const userPublisher = stub(Core.BaseEventPublishers.UserBetResultPublisher);
+                const consumer = new SettleGameRoundConsumer({
+                    definition: definition,
+                    gameData: gameData,
+                    roundResultPublisher: roundResultPublisher,
+                    userBetResultPublisher: userPublisher,
+                    roundsRepository: roundsRepository,
+                    betsRepository: betsRepository,
+                });
+                consumer.queryBets = jest.fn(round.id).mockReturnValue(baseBets);
+                consumer.calculateBetResult = jest
+                    .fn()
+                    .mockReturnValueOnce({ totalWin: 10, refund: 0 })
+                    .mockReturnValueOnce({ totalWin: 0, refund: 0 });
+                consumer.callEndGame = jest.fn();
+                consumer.captureBetResult = jest.fn();
+
+                // act
+                await consumer.settleBets(round);
+
+                // assert
+                expect(userPublisher.publish).toHaveBeenCalledTimes(baseBets.length);
+                expect(userPublisher.publish).toHaveBeenCalledWith(baseBets[0].uid, { totalWin: 10, refund: 0 });
+                expect(userPublisher.publish).toHaveBeenCalledWith(baseBets[1].uid, { totalWin: 0, refund: 0 });
+            });
+
+            it("should call decrypt with expected param", async () => {
+                // arrange
+                const consumer = new SettleGameRoundConsumer({
+                    definition: definition,
+                    gameData: gameData,
+                    roundResultPublisher: roundResultPublisher,
+                    userBetResultPublisher: userBetResultPublisher,
+                    roundsRepository: roundsRepository,
+                    betsRepository: betsRepository,
+                });
+                consumer.queryBets = jest.fn(round.id).mockReturnValue(baseBets);
+                consumer.calculateBetResult = jest.fn().mockReturnValue({});
+                consumer.callEndGame = jest.fn();
+                consumer.captureBetResult = jest.fn();
+
+                // act
+                await consumer.settleBets(round);
+
+                // assert
+                expect(decrypt).toHaveBeenCalledWith(round.resultKey);
+            });
+
+            it("should publish round result", async () => {
+                // arrange
+                const roundPublisher = stub(RoundResultPublisher);
+                const consumer = new SettleGameRoundConsumer({
+                    definition: definition,
+                    gameData: gameData,
+                    roundResultPublisher: roundPublisher,
+                    userBetResultPublisher: userBetResultPublisher,
+                    roundsRepository: roundsRepository,
+                    betsRepository: betsRepository,
+                });
+                consumer.queryBets = jest.fn(round.id).mockReturnValue(baseBets);
+                consumer.calculateBetResult = jest.fn().mockReturnValue({});
+                consumer.callEndGame = jest.fn();
+                consumer.captureBetResult = jest.fn();
+                decrypt.mockReturnValue("resultKey");
+
+                // act
+                await consumer.settleBets(round);
+
+                // assert
+                expect(roundPublisher.publishRoundResult).toHaveBeenCalledWith({
+                    result: round.result,
+                    settlementResult: round.settlementResult,
+                    resultKey: "resultKey",
+                    roundId: round.id,
+                });
+            });
         });
     });
     afterEach(() => {
