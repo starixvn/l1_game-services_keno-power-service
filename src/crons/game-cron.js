@@ -78,7 +78,7 @@ export class GameCron extends Core.Crons.BaseGameCron {
 
     async start() {
         const lastRound = await this.roundsRepository
-            .findOne({}, "id", { sort: { id: -1 } })
+            .findOne({}, "id settled", { sort: { id: -1 } })
             .lean()
             .exec();
         const job = new cron.CronJob(

@@ -25,12 +25,21 @@ const resultSchema = new mongoose.Schema(
     { _id: false }
 );
 
+const encryptedSchema = new mongoose.Schema(
+    {
+        iv: { type: String, required: true },
+        content: { type: String, required: true },
+    },
+    { _id: false }
+);
+
 const schema = new mongoose.Schema({
     id: { type: Number, require: true },
     result: resultSchema,
     settlementResult: settlementResultSchema,
-    resultKey: { type: String },
     md5: { type: String },
+    resultKey: encryptedSchema,
+    encryptedResult: encryptedSchema,
     settled: { type: Boolean, default: false },
     time: { type: Date, default: new Date() },
     exchangeRateId: { type: Number, require: true },

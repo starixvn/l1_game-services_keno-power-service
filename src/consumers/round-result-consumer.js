@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { GameDefinition } from "sc-multiple-games-base";
 
 import { sumArrayNumber } from "../helpers/array-helper";
-import { createHashMD5, randomString } from "../helpers/crypto-helper";
+import { createHashMD5, randomString, encrypt } from "../helpers/crypto-helper";
 import { RoundResultPublisher } from "../publishers/round-result-publisher";
 
 export class RoundResultConsumer {
@@ -27,23 +27,20 @@ export class RoundResultConsumer {
 
         const totalBlue = sumArrayNumber(result.blue);
         const totalRed = sumArrayNumber(result.red);
-        const settlementResult = this.definition.settle({ totalBlue, totalRed }, true);
 
-        const resultKey = `[${totalBlue};${totalRed}]${randomString()}`;
+        const resultKey = `{${totalBlue};${totalRed}}_{#${roundId}${randomString()}}`;
         const md5 = createHashMD5(resultKey);
 
         this.gameData.currentMD5 = md5;
         await this.roundsRepository.create({
             id: roundId,
-            result,
-            settlementResult,
-            resultKey,
             md5,
+            resultKey: encrypt(resultKey),
+            encryptedResult: encrypt(JSON.stringify(result)),
             time: new Date(),
             exchangeRateId: exchangeRates.exId,
         });
 
-        Object.assign(this.gameData, { result, settlementResult, totalBlue, totalRed, resultKey });
         this.roundResultPublisher.publishMD5(md5);
     }
 }
