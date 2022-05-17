@@ -14,6 +14,10 @@ const schema = new mongoose.Schema({
     currency: { type: String, require: true },
     rate: { type: Number, require: true },
     partnerId: { type: String, require: true },
+
+    playerId: { type: Number },
+    operatorId: { type: String, require: true },
+    roundId: { type: Number, required: true },
 });
 
 export default (modelName) => {
