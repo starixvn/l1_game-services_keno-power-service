@@ -1,14 +1,14 @@
 import { stub, stubMongooseModelStupidly } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 import { Core } from "sc-game-base";
-import { choices, choicesMapper } from "../../constants";
-import { RoundResultPublisher } from "../../publishers/round-result-publisher";
-import { SettleGameRoundConsumer } from "../settle-game-round-consumer";
-import { decrypt } from "../../helpers/crypto-helper";
-import { sumArrayNumber } from "../../helpers/array-helper";
+import { choices, choicesMapper } from "../../../src/constants";
+import { RoundResultPublisher } from "../../../src/publishers/round-result-publisher";
+import { SettleGameRoundConsumer } from "../../../src/consumers/settle-game-round-consumer";
+import { decrypt } from "../../../src/helpers/crypto-helper";
+import { sumArrayNumber } from "../../../src/helpers/array-helper";
 
-jest.mock("../../helpers/crypto-helper");
-jest.mock("../../helpers/array-helper");
+jest.mock("../../../src/helpers/crypto-helper");
+jest.mock("../../../src/helpers/array-helper");
 
 const gameData = new Core.GameData(30);
 

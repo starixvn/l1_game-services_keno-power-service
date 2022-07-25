@@ -1,4 +1,4 @@
-import { RoundResultPublisher } from "../round-result-publisher";
+import { RoundResultPublisher } from "../../../src/publishers/round-result-publisher";
 import { Core } from "sc-game-base";
 describe("round result publisher instance", () => {
     const gameData = new Core.GameData();
