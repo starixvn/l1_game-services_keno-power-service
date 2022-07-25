@@ -53,6 +53,7 @@ export class GameCron extends Core.Crons.BaseGameCron {
 
     async proceed() {
         const { durations } = this.definition;
+        const { randomMode } = this.gameData.gameConfigs;
 
         if (this.gameData.remainingTime === durations.wholeRound) {
             await this.checkGameStatus();
@@ -64,7 +65,7 @@ export class GameCron extends Core.Crons.BaseGameCron {
 
         if (this.isStartingTime(this.gameData.remainingTime, durations)) {
             this.resetForNewRound();
-            await this.roundResultConsumer.generateResult();
+            await this.roundResultConsumer.generateResult(randomMode);
         }
 
         if (this.gameData.remainingTime < 0) {

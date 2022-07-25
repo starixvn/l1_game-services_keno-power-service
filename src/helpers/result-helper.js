@@ -1,17 +1,20 @@
 import Chance from "chance";
 import { Random, MersenneTwister19937 } from "random-js";
+import { shuffle as d3Shuffle } from "d3-array";
+import _ from "lodash";
 
 const chance = new Chance();
 const random = new Random(MersenneTwister19937.autoSeed());
 const seeds = [...Array(81).keys()].slice(1);
+const numberOfPicked = 20;
 
-const shuffleThenPickOut20ByChance = () => chance.pickset(seeds, 20);
+const shuffleThenPickOut20ByChance = () => chance.pickset(seeds, numberOfPicked);
 
-const random20UniqueNumbersByChance = () => chance.unique(chance.natural, 20, { min: 1, max: 80 });
+const random20UniqueNumbersByChance = () => chance.unique(chance.natural, numberOfPicked, { min: 1, max: 80 });
 
-const shuffleThenPickOut20ByRandomJs = () => random.shuffle([...seeds]).slice(0, 20);
+const shuffleThenPickOut20ByRandomJs = () => random.shuffle([...seeds]).slice(0, numberOfPicked);
 
-const randomlyPick20NumbersByRandomJs = () => random.sample(seeds, 20);
+const randomlyPick20NumbersByRandomJs = () => random.sample(seeds, numberOfPicked);
 
 const algorithms = [
     shuffleThenPickOut20ByChance,
@@ -19,16 +22,6 @@ const algorithms = [
     shuffleThenPickOut20ByRandomJs,
     randomlyPick20NumbersByRandomJs,
 ];
-
-const getRandom20Numbers = () => {
-    const randomSelection = chance.natural({
-        min: 0,
-        max: algorithms.length - 1,
-    });
-    const result = algorithms[randomSelection]();
-
-    return result.sort((pre, next) => pre - next);
-};
 
 const settlementResultRuleEntries = Object.entries({
     blue: ({ totalBlue, totalRed }) => totalBlue > totalRed,
@@ -44,10 +37,33 @@ const settlementResultRuleEntries = Object.entries({
     redSmall: ({ totalRed }) => totalRed < 811,
 });
 
-export const generateResult = () => {
+const random1 = () => {
+    const randomSelection = chance.natural({
+        min: 0,
+        max: algorithms.length - 1,
+    });
+
+    return algorithms[randomSelection]();
+};
+
+const random2 = () => {
+    return d3Shuffle(d3Shuffle(d3Shuffle(seeds))).slice(0, numberOfPicked);
+};
+
+const random3 = () => _.shuffle(_.shuffle(_.shuffle(seeds))).slice(0, numberOfPicked);
+
+const randomModes = {
+    1: [random1],
+    2: [random2],
+    3: [random3],
+};
+
+export const generateResult = (randomMode) => {
+    const randomShuffles = randomModes[randomMode] || randomModes[1];
+
     return {
-        blue: getRandom20Numbers(),
-        red: getRandom20Numbers(),
+        blue: chance.pickone(randomShuffles)(),
+        red: chance.pickone(randomShuffles)(),
     };
 };
 

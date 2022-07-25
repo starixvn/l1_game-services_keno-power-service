@@ -20,10 +20,11 @@ export class RoundResultConsumer {
     }
 
     async generateResult() {
-        const { roundId, exchangeRates } = this.gameData;
+        const { roundId, exchangeRates, gameConfigs } = this.gameData;
+        const { randomMode } = gameConfigs;
         const resultFromAdmin = this.gameData.settlementResultFromAdmin;
 
-        const result = roundId === resultFromAdmin.roundId ? resultFromAdmin.result : this.definition.generateResult();
+        const result = roundId === resultFromAdmin.roundId ? resultFromAdmin.result : this.definition.generateResult(randomMode);
 
         const totalBlue = sumArrayNumber(result.blue);
         const totalRed = sumArrayNumber(result.red);

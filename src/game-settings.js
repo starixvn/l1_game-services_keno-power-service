@@ -30,7 +30,7 @@ export default [
             betsRepository: getBetRepository("kenopower1_one"),
             betLogsRepository: getBetLogsRepository("kenopower1_cuoc"),
         },
-        generateResult: generateResult,
+        generateResult,
         settle: getSettlementResult,
     },
     {
@@ -50,7 +50,7 @@ export default [
             betsRepository: getBetRepository("kenopower2_one"),
             betLogsRepository: getBetLogsRepository("kenopower2_cuoc"),
         },
-        generateResult: generateResult,
+        generateResult,
         settle: getSettlementResult,
     },
 ];
