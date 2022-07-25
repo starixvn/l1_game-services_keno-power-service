@@ -43,7 +43,8 @@ const random1 = () => {
         max: algorithms.length - 1,
     });
 
-    return algorithms[randomSelection]();
+    const result = algorithms[randomSelection]();
+    return result.sort((pre, next) => pre - next);
 };
 
 const random2 = () => {
