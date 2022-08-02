@@ -26,7 +26,7 @@ function run() {
         streaks: { total: 0, big: 0, small: 0, odd: 0, even: 0, blue: 0, red: 0, blueBig: 0, blueSmall: 0, redBig: 0, redSmall: 0 },
     };
 
-    const randomMode = 1;
+    const randomMode = 3;
 
     for (let index = 0; index < totalRounds; index++) {
         const result = generateResult(randomMode);
