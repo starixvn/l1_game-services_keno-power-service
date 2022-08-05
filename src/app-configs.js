@@ -2,8 +2,8 @@ export default {
     hostingPort: 8089,
     apiSettings: {
         enabledApi: true,
-        apiUrl: "http://localhost:8868",
-        authUrl: "http://localhost:8898",
+        apiUrl: "http://api.lumigame.com",
+        authUrl: "http://auth.lumigame.com",
         client: {
             id: "game-server",
             secret: "gameserver@20luminet&",

@@ -1,4 +1,4 @@
-import { getSettlementResult, generateResult } from "../result-helper";
+import { getSettlementResult, generateResult } from "../../../src/helpers/result-helper";
 
 describe("settlementResult tests", () => {
     const testCases = [

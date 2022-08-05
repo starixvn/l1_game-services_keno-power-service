@@ -3,9 +3,9 @@ import mongoose from "mongoose";
 import { logger } from "sc-common";
 import { Core } from "sc-game-base";
 
-import { choices, choicesMapper } from "../../constants";
-import { RoundResultConsumer, SettleGameRoundConsumer } from "../../consumers";
-import { GameCron } from "../game-cron";
+import { choices, choicesMapper } from "../../../src/constants";
+import { RoundResultConsumer, SettleGameRoundConsumer } from "../../../src/consumers";
+import { GameCron } from "../../../src/crons/game-cron";
 
 describe("game cron instance", () => {
     const definition = {

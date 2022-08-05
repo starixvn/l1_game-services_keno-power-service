@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="5" failures="0" errors="0" time="62.194">
+  <testsuite name="signin" errors="0" failures="0" skipped="0" timestamp="2022-08-02T02:53:38" time="62.033" tests="5">
+    <testcase classname="signin should receive signed in response" name="signin should receive signed in response" time="0.107">
+    </testcase>
+    <testcase classname="when user joins game should return kenopower data" name="when user joins game should return kenopower data" time="0.118">
+    </testcase>
+    <testcase classname="place bet when place bet in placing bet time should return own bet data" name="place bet when place bet in placing bet time should return own bet data" time="0.159">
+    </testcase>
+    <testcase classname="place bet when place bet NOT in placing bet time should return invalid" name="place bet when place bet NOT in placing bet time should return invalid" time="32.083">
+    </testcase>
+    <testcase classname="when settle should return settled status data" name="when settle should return settled status data" time="4.442">
+    </testcase>
+  </testsuite>
+</testsuites>

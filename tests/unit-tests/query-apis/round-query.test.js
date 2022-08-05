@@ -1,7 +1,7 @@
 import { stubMongooseModelStupidly } from "jest-micro-auto-stub";
 import mongoose from "mongoose";
 
-import { RoundQuery } from "../round-query";
+import { RoundQuery } from "../../../src/query-apis/round-query";
 
 describe("round query test", () => {
     /** @type {mongoose.Model}*/
