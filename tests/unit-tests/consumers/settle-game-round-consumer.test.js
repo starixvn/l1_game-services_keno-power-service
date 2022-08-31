@@ -419,8 +419,8 @@ describe("settle game round consumer instance", () => {
 
         describe("when exist bets", () => {
             const baseBets = [
-                { uid: 1, rate: { VND: 1000 }, thanhtoan: false, save: jest.fn(), red: 10 },
-                { uid: 2, rate: { VND: 1000 }, thanhtoan: false, save: jest.fn(), blue: 10 },
+                { uid: 1, rate: { VND: 1000 }, paid: false, save: jest.fn(), red: 10 },
+                { uid: 2, rate: { VND: 1000 }, paid: false, save: jest.fn(), blue: 10 },
             ];
             it("should call calculateBetResult", async () => {
                 // arrange
@@ -468,8 +468,8 @@ describe("settle game round consumer instance", () => {
                 it("should update betwin", async () => {
                     // arrange
                     const bets = [
-                        { uid: 1, rate: { VND: 1000 }, thanhtoan: false, save: jest.fn(), red: 10 },
-                        { uid: 2, rate: { VND: 1000 }, thanhtoan: false, save: jest.fn(), blue: 10 },
+                        { uid: 1, rate: { VND: 1000 }, paid: false, save: jest.fn(), red: 10 },
+                        { uid: 2, rate: { VND: 1000 }, paid: false, save: jest.fn(), blue: 10 },
                     ];
                     consumer.queryBets = jest.fn(round.id).mockReturnValue(bets);
 
@@ -484,8 +484,8 @@ describe("settle game round consumer instance", () => {
                 it("should update refund", async () => {
                     // arrange
                     const bets = [
-                        { uid: 1, rate: { VND: 1000 }, thanhtoan: false, save: jest.fn(), red: 10 },
-                        { uid: 2, rate: { VND: 1000 }, thanhtoan: false, save: jest.fn(), blue: 10 },
+                        { uid: 1, rate: { VND: 1000 }, paid: false, save: jest.fn(), red: 10 },
+                        { uid: 2, rate: { VND: 1000 }, paid: false, save: jest.fn(), blue: 10 },
                     ];
                     consumer.queryBets = jest.fn(round.id).mockReturnValue(bets);
 
@@ -497,11 +497,11 @@ describe("settle game round consumer instance", () => {
                     expect(bets[1].refund).toBe(0);
                 });
 
-                it("should update thanhtoan", async () => {
+                it("should update paid", async () => {
                     // arrange
                     const bets = [
-                        { uid: 1, rate: { VND: 1000 }, thanhtoan: false, save: jest.fn(), red: 10 },
-                        { uid: 2, rate: { VND: 1000 }, thanhtoan: false, save: jest.fn(), blue: 10 },
+                        { uid: 1, rate: { VND: 1000 }, paid: false, save: jest.fn(), red: 10 },
+                        { uid: 2, rate: { VND: 1000 }, paid: false, save: jest.fn(), blue: 10 },
                     ];
                     consumer.queryBets = jest.fn(round.id).mockReturnValue(bets);
 
@@ -509,15 +509,15 @@ describe("settle game round consumer instance", () => {
                     await consumer.settleBets(round);
 
                     // assert
-                    expect(bets[0].thanhtoan).toBeTrue();
-                    expect(bets[1].thanhtoan).toBeTrue();
+                    expect(bets[0].paid).toBeTrue();
+                    expect(bets[1].paid).toBeTrue();
                 });
 
                 it("should call save", async () => {
                     // arrange
                     const bets = [
-                        { uid: 1, rate: { VND: 1000 }, thanhtoan: false, save: jest.fn(), red: 10 },
-                        { uid: 2, rate: { VND: 1000 }, thanhtoan: false, save: jest.fn(), blue: 10 },
+                        { uid: 1, rate: { VND: 1000 }, paid: false, save: jest.fn(), red: 10 },
+                        { uid: 2, rate: { VND: 1000 }, paid: false, save: jest.fn(), blue: 10 },
                     ];
                     consumer.queryBets = jest.fn(round.id).mockReturnValue(bets);
 
