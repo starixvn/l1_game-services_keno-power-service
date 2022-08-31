@@ -37,7 +37,7 @@ export const createTestData = async () => {
     await createGameConfig(gameConfig);
     const partnerConfig = await createPartnerConfig(game.id);
 
-    const currency = await createDummyCurrency(partnerConfig.operatorId, currencyData.code, currencyData.name);
+    const currency = await createDummyCurrency(partnerConfig.partnerId, currencyData.code, currencyData.name);
     await createCurrencyGroupGames(currency.groupId, game.id, gameConfig);
     await createDummyUsers(currency);
     await createRounds();
