@@ -17,7 +17,6 @@ const schema = new mongoose.Schema({
     redBig: { type: Number, default: 0 },
     redSmall: { type: Number, default: 0 },
 
-    thanhtoan: { type: Boolean, default: false },
     betwin: { type: Number, default: 0 },
     refund: { type: Number, default: 0 },
     totalAmount: { type: Number, default: 0 },
