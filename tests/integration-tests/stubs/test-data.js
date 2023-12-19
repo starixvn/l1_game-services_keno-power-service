@@ -128,7 +128,7 @@ const userBetData = (uid) => {
             currency: "$US",
             rate: 1,
             operatorId: "dummy-operator-id",
-            playerId: 2609,
+            playerId: "2609",
         },
         {
             uid,
@@ -141,7 +141,7 @@ const userBetData = (uid) => {
             currency: "$US",
             rate: 1,
             operatorId: "dummy-operator-id",
-            playerId: 2609,
+            playerId: "2609",
         },
     ];
 };
