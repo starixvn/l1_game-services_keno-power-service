@@ -8,21 +8,6 @@ const random = new Random(MersenneTwister19937.autoSeed());
 const seeds = [...Array(81).keys()].slice(1);
 const numberOfPicked = 20;
 
-const shuffleThenPickOut20ByChance = () => chance.pickset(seeds, numberOfPicked);
-
-const random20UniqueNumbersByChance = () => chance.unique(chance.natural, numberOfPicked, { min: 1, max: 80 });
-
-const shuffleThenPickOut20ByRandomJs = () => random.shuffle([...seeds]).slice(0, numberOfPicked);
-
-const randomlyPick20NumbersByRandomJs = () => random.sample(seeds, numberOfPicked);
-
-const algorithms = [
-    shuffleThenPickOut20ByChance,
-    random20UniqueNumbersByChance,
-    shuffleThenPickOut20ByRandomJs,
-    randomlyPick20NumbersByRandomJs,
-];
-
 const settlementResultRuleEntries = Object.entries({
     blue: ({ totalBlue, totalRed }) => totalBlue > totalRed,
     red: ({ totalBlue, totalRed }) => totalRed > totalBlue,
@@ -37,15 +22,7 @@ const settlementResultRuleEntries = Object.entries({
     redSmall: ({ totalRed }) => totalRed < 811,
 });
 
-const random1 = () => {
-    const randomSelection = chance.natural({
-        min: 0,
-        max: algorithms.length - 1,
-    });
-
-    const result = algorithms[randomSelection]();
-    return result.sort((pre, next) => pre - next);
-};
+const random1 = () => chance.shuffle(chance.shuffle(chance.shuffle(seeds))).slice(0, numberOfPicked);
 
 const random2 = () => {
     return d3Shuffle(d3Shuffle(d3Shuffle(seeds))).slice(0, numberOfPicked);
@@ -53,10 +30,18 @@ const random2 = () => {
 
 const random3 = () => _.shuffle(_.shuffle(_.shuffle(seeds))).slice(0, numberOfPicked);
 
+const random4 = () => chance.pickset(seeds, numberOfPicked);
+
+const random5 = () => chance.unique(chance.natural, numberOfPicked, { min: 1, max: 80 });
+
+const random6 = () => random.shuffle([...seeds]).slice(0, numberOfPicked);
+
+const random7 = () => random.sample(seeds, numberOfPicked);
+
 export const randomModes = {
-    1: [random1],
-    2: [random2],
-    3: [random3],
+    1: [random1, random2, random3, random4],
+    2: [random4, random5, random6, random7],
+    3: [random1, random3, random5, random7],
 };
 
 export const generateResult = (randomMode) => {
