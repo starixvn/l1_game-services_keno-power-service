@@ -29,7 +29,7 @@
     },
     "resolutions": {
         "sc-game-base": "4.1.0",
-        "sc-base-apis": "1.18.3-beta.0"
+        "sc-base-apis": "1.18.2"
     },
     "devDependencies": {
         "@babel/preset-env": "^7.12.11",
